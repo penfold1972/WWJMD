@@ -38,7 +38,7 @@
 ### Data Flow & Conventions
 - **Custom Resources** (`brand_data.gd`) live in `src/resources/` and are loaded via `ResourceLoader`.
 - **@tool scripts** live in `src/tools/` and attach to Node3D in the editor.
-- **Player Controller** uses `CharacterBody3D` with `mouse-look` via `Input.get_look_...` (Godot 4 style).
+- **Player Controller** uses `CharacterBody3D` with mouse-look via `_input(InputEventMouseMotion)`.
 - **Destructible items** implement a 4-phase health state machine. Fragments auto-delete after 5 s.
 - **QA scripts** are standalone `.gd` files that can be attached to a Node in a test scene or run via `--script`.
 

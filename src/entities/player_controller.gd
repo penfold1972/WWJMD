@@ -7,7 +7,7 @@ extends CharacterBody3D
 @export var move_speed: float = 5.0
 @export var sprint_multiplier: float = 1.5
 @export var acceleration: float = 12.0
-@export var friction: float = 0.85
+@export var friction: float = 0.85  # unused; kept for tuning API
 
 var _camera: Camera3D
 var _input_dir: Vector2
@@ -26,14 +26,14 @@ func _input(event: InputEvent):
 		rotate_y(look_yaw)
 
 func _process(_delta: float):
-	# Toggle mouse capture on UI click
-	if Input.is_action_just_pressed("shoot") and Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:
+	# Capture mouse on any click when UI is visible
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 func _physics_process(delta: float):
 	_input_dir = Vector2(
 		Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
-		Input.get_action_strength("move_backward") - Input.get_action_strength("move_forward")
+		Input.get_action_strength("move_forward") - Input.get_action_strength("move_backward")
 	)
 
 	_is_sprinting = Input.is_action_pressed("sprint")
@@ -45,9 +45,10 @@ func _physics_process(delta: float):
 		var right = global_transform.basis.x
 		target_velocity = (forward * _input_dir.y + right * _input_dir.x).normalized() * speed
 
-	# Apply acceleration / friction
+	# Apply acceleration (lerp weight clamped to prevent overshoot)
 	var h_vel = Vector3(velocity.x, 0, velocity.z)
-	h_vel = h_vel.lerp(target_velocity, delta * acceleration)
+	var weight = clamp(delta * acceleration, 0.0, 1.0)
+	h_vel = h_vel.lerp(target_velocity, weight)
 	velocity.x = h_vel.x
 	velocity.z = h_vel.z
 
