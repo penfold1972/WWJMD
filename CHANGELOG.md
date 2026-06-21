@@ -32,3 +32,22 @@
 ### Design Observations
 - `friction` export variable in `player_controller.gd` is declared but unused. Kept as a tuning placeholder for future refinement.
 - `globals.gd` and `test_input_detection.gd` were clean with no issues.
+
+## Stage 2 — Brand Data & Destructible Framework
+
+### Added
+- `src/resources/brand_data.gd` — Custom Resource with brand_name, product_texture, container_class, destruction_class.
+- `src/entities/destructible_item.gd` — 4-phase health state machine (INDESTRUCTIBLE → DENT → DAMAGED → DESTROYED).
+- `tests/test_destruction.gd` — QA test that cycles each phase and verifies fragment cleanup.
+
+### Bugs Fixed During Review
+1. **Dead code (`_original_mesh_data`)** — Stored vertex buffer data never used by the dent system (which uses scale deformation instead). Removed.
+2. **Fragile resource casting** — `brand_data as Resource` then `.container_class` relied on duck-typing without a fallback. Replaced with safe `get("container_class")` access.
+3. **Particles deleted with parent** — Phase 3 particles were `add_child` to the item, then deleted when Phase 4 calls `queue_free`. Reparented to `get_tree().root` so they survive and self-clean via timer.
+
+### Design Details
+- Phase 1 (Indestructible): absorbs hits, no visual change.
+- Phase 2 (Dent): non-uniform scale distortion (0.92–0.98x on random axes).
+- Phase 3 (Damaged): resets scale, spawns GPUParticles3D (debris for boxes/bags, liquid for cans/bottles).
+- Phase 4 (Destroyed): hides mesh, spawns `fragment_count` RigidBody3D cubes with random velocity (3–8 m/s), auto-deletes after 5 s (with ±20% jitter).
+- `is_mirror_variant` export ready for Stage 3 shelf stocker to set 50% chance.
