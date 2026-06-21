@@ -5,10 +5,11 @@ description="What Would John McClain Do? — A 3D FPS destruction sandbox"
 
 [application]
 run_mode=current
-icon=""
+icon="res://assets/icon.svg"
 
 [rendering]
 renderer="forward_plus"
+environment/default=res://assets/default_env.tres
 
 [input]
 move_forward={

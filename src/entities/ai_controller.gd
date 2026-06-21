@@ -21,7 +21,7 @@ var _state: int = AIState.IDLE
 var _player_ref: Node3D = null
 var _nav_agent: NavigationAgent3D = null
 var _origin: Vector3
-var _move_dir: Vector3 = Vector3.ZERO
+# Unused — reserved for future movement smoothing
 
 signal ai_state_changed(from_state: int, to_state: int)
 
@@ -83,7 +83,7 @@ func _handle_chase(delta: float) -> void:
 
 func _handle_attack(_delta: float) -> void:
 	# Placeholder: face player and emit alert
-	look_at(_player_ref.global_transform.origin, Vector3.UP, true)
+	look_at(_player_ref.global_transform.origin, Vector3.UP)
 	var dist = global_transform.origin.distance_to(_player_ref.global_transform.origin)
 	if dist > aggro_radius * 1.5:
 		_change_state(AIState.CHASE)

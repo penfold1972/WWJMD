@@ -85,13 +85,8 @@ func _apply_damaged() -> void:
 
 	var container = "box"
 	if brand_data:
-		var bd = brand_data as Resource
-		if bd and bd.has_method("get_container_class"):
-			container = bd.get_container_class()
-		else:
-			# Duck-type access via script variables
-			var cls = bd.get("container_class")
-			container = cls if cls is String else "box"
+		var cls = brand_data.get("container_class")
+		container = cls if cls is String else "box"
 
 	match container:
 		"can", "bottle":
@@ -126,9 +121,9 @@ func _spawn_particles(scene: PackedScene) -> void:
 	particles.global_transform.origin = global_transform.origin
 	particles.emitting = true
 	particles.one_shot = true
-	# Self-clean particles after they finish
-	var lifetime = particles.lifetime * particles.duration * 1.5
-	var t = get_tree().create_timer(lifetime)
+	# Self-clean particles after they finish (duration + max particle lifetime)
+	var cleanup_time = particles.duration + particles.lifetime * 1.5
+	var t = get_tree().create_timer(cleanup_time)
 	t.timeout.connect(func(): particles.queue_free())
 
 func _spawn_fragments() -> void:

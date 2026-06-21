@@ -6,7 +6,7 @@
 /wwjmd
 ├── ARCHITECTURE.md              # This file
 ├── project.godot                # Godot project configuration
-├── default_input_map.tres       # 3D FPS input bindings
+                               # Input actions defined inline in project.godot
 │
 ├── src/
 │   ├── core/                    # Core systems & singletons

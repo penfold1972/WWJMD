@@ -123,7 +123,7 @@ func _make_material(bd: Resource) -> Material:
 
 func _spawn_item(origin: Vector3, mesh_map: Dictionary, mat: Material) -> Node3D:
 	var item = Node3D.new()
-	item.name = "ShelfItem_%d_%d" % [grid_width, grid_height]
+	item.name = "ShelfItem_%d" % [_generated_items.size()]
 
 	# Mesh
 	var mi = MeshInstance3D.new()

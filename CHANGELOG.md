@@ -88,3 +88,20 @@
 - **AI Controller**: 12 m aggro radius, 55° view cone. Chases at 4.0 m/s. Returns to origin if player leaves 24 m range.
 - **NPC roles**: `civilian` (placeholder) and `cop` (placeholder). Spawned at predefined positions.
 - **Integration**: Level builder, AI controller, destructible items all wired for the complete "enter → shoot → destroy" loop.
+
+## Final Review — Cross-Stage Bug Hunt (pre-refinement)
+
+### Bugs Found & Fixed
+
+1. **`ARCHITECTURE.md` — Still referenced deleted `default_input_map.tres`** (line 9). Replaced with inline comment.
+2. **`destructible_item.gd` — Misleading `has_method("get_container_class")` check** — brand_data.gd doesn't define that method. Simplified to direct `get("container_class")`.
+3. **`destructible_item.gd` — Wrong particle cleanup formula** — used `lifetime * duration * 1.5` instead of `duration + lifetime * 1.5`. Fixed.
+4. **`ai_controller.gd` — Dead variable `_move_dir`** — declared but never assigned or read. Commented as reserved.
+5. **`ai_controller.gd` — Incorrect `look_at` third parameter** — passed `true` for `use_modelview` instead of default `false`. Changed to omit third arg.
+6. **`shelf_stocker.gd` — Duplicate item names** — all items got `ShelfItem_<grid_w>_<grid_h>` (same for every item). Changed to use `_generated_items.size()` for unique names.
+7. **`test_destruction.gd` — Fragment cleanup checked wrong group** — used `get_nodes_in_group("fragments")` but fragments are never added to a group. Changed to count `RigidBody3D` children.
+
+### Assets Added (needed to run in Godot)
+- `assets/icon.svg` — Project icon with "WWJMD v0.1.0" branding.
+- `assets/default_env.tres` — Default environment (ambient color, sky energy) so viewport isn't black.
+- `project.godot` updated to reference both.

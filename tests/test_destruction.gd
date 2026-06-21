@@ -71,10 +71,13 @@ func _test_phase(item: Node, expected_phase: int, label: String, health: float) 
 		_test_passed = false
 
 func _check_cleanup() -> void:
-	var remaining = get_tree().get_nodes_in_group("fragments")
-	var count = remaining.size() if remaining else 0
-	print("\n  Fragment cleanup check: %d nodes remaining after 6s" % count)
-	if count == 0:
+	var children = get_children()
+	var alive = 0
+	for c in children:
+		if c is RigidBody3D:
+			alive += 1
+	print("\n  Fragment cleanup check: %d RigidBody3D nodes remaining after 6s" % alive)
+	if alive == 0:
 		print("  QA SIGNED OFF: Stage 2 destruction framework is stable.")
 	else:
-		print("  QA WARNING: %d fragments still alive (may be expected if not in group)." % count)
+		print("  QA WARNING: %d fragments still alive (may be expected if not in group)." % alive)
