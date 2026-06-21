@@ -10,11 +10,12 @@
 │
 ├── src/
 │   ├── core/                    # Core systems & singletons
-│   │   └── globals.gd
+│   │   ├── globals.gd
+│   │   └── level_builder.gd          # Stage 4 store floor plan
 │   ├── entities/                # Player, AI, destructibles
 │   │   ├── player_controller.gd
 │   │   ├── destructible_item.gd      # Stage 2
-│   │   └── ai_controller.gd          # Stage 4
+│   │   └── ai_controller.gd          # Stage 4 navmesh AI
 │   ├── objects/                 # Level props & containers
 │   ├── tools/                   # Editor utilities
 │   │   └── shelf_stocker.gd          # Stage 3 @tool
@@ -28,10 +29,11 @@
 │
 ├── tests/
 │   ├── test_input_detection.gd  # Stage 1 QA script
-│   └── test_destruction.gd      # Stage 2 QA script
+│   ├── test_destruction.gd      # Stage 2 QA script
+│   ├── test_shelf_stocker.gd    # Stage 3 QA script
+│   └── test_level_integration.gd # Stage 4 QA script
 │
-└── levels/                      # Stage 4 tutorial level
-    └── munchies_store.tscn
+└── levels/                      # Stage 4 tutorial level (builder creates at runtime)
 ```
 
 ### Data Flow & Conventions

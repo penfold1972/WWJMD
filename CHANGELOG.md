@@ -70,3 +70,21 @@
 - Container types: `can` (cylinder), `bottle` (cylinder), `bag` (box), default (box).
 - Material: pulls `product_texture` from BrandData; falls back to random pastel color.
 - Protection: all generation gated by `Engine.is_editor_hint()` — never runs in-game.
+
+## Stage 4 — Munchies Tutorial Level Integration
+
+### Added
+- `src/entities/ai_controller.gd` — Navmesh-driven AI with IDLE → ALERT → CHASE → ATTACK state machine.
+- `src/core/level_builder.gd` — Procedural store floor plan builder (walls, checkout counter, shelf rows, NPC spawns).
+- `tests/test_level_integration.gd` — End-to-end QA test: build store → AI aggro → destruction cycle.
+- `levels/` directory — Ready for `.tscn` scenes.
+
+### Bugs Fixed During Review
+1. **`level_builder.gd` — `node.mesh_instance` was a class member, not a node property** — `_make_wall` tried to store `mesh_instance` on the returned Node3D, but the variable belonged to the LevelBuilder class. Replaced with `node.set_meta("mesh_instance", mi)` and a `get_shelf_mesh()` accessor.
+2. **`level_builder.gd` — Shelf material assignment referenced invalid property** — `shelf.mesh_instance` was nil. Now uses `get_meta` to retrieve the MeshInstance3D.
+
+### Design Details
+- **Floor plan**: 18×14 m store with 4 perimeter walls, checkout counter at front, 2 rows × 3 shelves.
+- **AI Controller**: 12 m aggro radius, 55° view cone. Chases at 4.0 m/s. Returns to origin if player leaves 24 m range.
+- **NPC roles**: `civilian` (placeholder) and `cop` (placeholder). Spawned at predefined positions.
+- **Integration**: Level builder, AI controller, destructible items all wired for the complete "enter → shoot → destroy" loop.
