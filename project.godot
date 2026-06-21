@@ -1,0 +1,20 @@
+[config]
+name="WWJMD"
+version="0.1.0"
+description="What Would John McClain Do? — A 3D FPS destruction sandbox"
+
+[application]
+run_mode=current
+icon=""
+
+[rendering]
+renderer="forward_plus"
+
+[input]
+input_map="res://default_input_map.tres"
+
+[physics]
+3d/gravity=9.8
+
+[debug]
+settings/gdscript/warnings/treat_warnings_as_errors=false
