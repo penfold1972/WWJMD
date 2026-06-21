@@ -11,20 +11,36 @@ var _test_passed: bool = true
 func _ready():
 	print("=== QA: Stage 4 Level Integration ===")
 
-	# --- Test 1: Level Builder constructs the store ---
-	print("  Test 1: Build store floor plan...")
+	# --- Test 1: Level Builder constructs the refined store ---
+	print("  Test 1: Build refined store floor plan...")
 	var script = preload("res://src/core/level_builder.gd")
 	_builder = script.new() as Node3D
 	_builder.name = "LevelBuilder"
 	add_child(_builder)
 	_builder.build_level()
 
-	var wall_count = _builder.get_child_count()
-	print("  Children after build: %d" % wall_count)
-	if wall_count >= 6:
-		print("  [OK] Store built with walls, counter, shelves")
+	var child_count = _builder.get_child_count()
+	print("  Children after build: %d" % child_count)
+	if child_count >= 25:
+		print("  [OK] Refined store built (walls, coolers, bathrooms, manager, counter, aisles, parking, van, exit)")
 	else:
-		print("  [FAIL] Too few nodes: %d" % wall_count)
+		print("  [FAIL] Too few nodes: %d (expected >=25)" % child_count)
+		_test_passed = false
+
+	# Spot-check specific features
+	var has_cooler = _builder.find_child("Cooler_*", true, false) != null
+	var has_manager = _builder.find_child("ManagerDoor", true, false) != null
+	var has_bathroom = _builder.find_child("BathroomDoor_*", true, false) != null
+	var has_codelock = _builder.find_child("CodeLock", true, false) != null
+	var has_van = _builder.find_child("VanBody", true, false) != null
+	var has_exit = _builder.find_child("ExitTrigger", true, false) != null
+	print("  Features: cooler=%s manager=%s bath=%s lock=%s van=%s exit=%s" % [
+		has_cooler, has_manager, has_bathroom, has_codelock, has_van, has_exit
+	])
+	if has_cooler and has_manager and has_bathroom and has_codelock and has_van and has_exit:
+		print("  [OK] All requested features present")
+	else:
+		print("  [FAIL] Missing features detected")
 		_test_passed = false
 
 	# --- Test 2: AI Controller detects player ---

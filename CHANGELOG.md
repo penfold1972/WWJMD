@@ -89,7 +89,7 @@
 - **NPC roles**: `civilian` (placeholder) and `cop` (placeholder). Spawned at predefined positions.
 - **Integration**: Level builder, AI controller, destructible items all wired for the complete "enter → shoot → destroy" loop.
 
-## Final Review — Cross-Stage Bug Hunt (pre-refinement)
+## Refinement Pass — Level Layout Overhaul
 
 ### Bugs Found & Fixed
 
@@ -105,3 +105,25 @@
 - `assets/icon.svg` — Project icon with "WWJMD v0.1.0" branding.
 - `assets/default_env.tres` — Default environment (ambient color, sky energy) so viewport isn't black.
 - `project.godot` updated to reference both.
+
+## Refinement Pass — Level Layout Overhaul
+
+### Redesigned Store Floor Plan (`src/core/level_builder.gd`)
+Complete rewrite of the convenience store layout per user specs:
+
+| Feature | Implementation |
+|---------|---------------|
+| **Aisles in the middle** | 3 aisles × 4 shelves, evenly spaced across the store's depth |
+| **Counter near the door** | Checkout counter + register terminal, 3 units from front wall |
+| **Coolers & freezers (back wall)** | 5 units lining the back wall; last 2 are purple "freezer", first 3 are blue "cooler" |
+| **Manager door + code lock** | Dark brown door on left wall; adjacent black lock box with 4 yellow digit indicators |
+| **Bathrooms** | Two doors on left wall (Men's / Women's) with labeled plaques |
+| **Parking lot** | Asphalt ground + white parking lines outside the front entrance |
+| **Getaway van** | Box-modeled van (body, cab, windshield, wheels, open rear doors) in the lot |
+| **Exit trigger** | Area3D near the van; emits `level_exit_triggered` when a CharacterBody3D enters |
+
+### Other Changes
+- `_make_wall()` renamed to `_make_box()` — now used for all structural geometry.
+- Front wall split into two segments with a 1.2-unit door gap.
+- NPC spawn points redistributed across the store interior.
+- QA test updated to verify all 6 new features (cooler, manager door, bathroom, code lock, van, exit trigger).
