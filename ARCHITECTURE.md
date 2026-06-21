@@ -16,9 +16,8 @@
 │   │   ├── destructible_item.gd      # Stage 2
 │   │   └── ai_controller.gd          # Stage 4
 │   ├── objects/                 # Level props & containers
-│   │   └── shelf_stocker.gd          # Stage 3 @tool
 │   ├── tools/                   # Editor utilities
-│   │   └── shelf_stocker.gd          # Stage 3 @tool (alias)
+│   │   └── shelf_stocker.gd          # Stage 3 @tool
 │   └── resources/               # Custom resources
 │       └── brand_data.gd             # Stage 2
 │

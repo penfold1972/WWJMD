@@ -51,3 +51,22 @@
 - Phase 3 (Damaged): resets scale, spawns GPUParticles3D (debris for boxes/bags, liquid for cans/bottles).
 - Phase 4 (Destroyed): hides mesh, spawns `fragment_count` RigidBody3D cubes with random velocity (3–8 m/s), auto-deletes after 5 s (with ±20% jitter).
 - `is_mirror_variant` export ready for Stage 3 shelf stocker to set 50% chance.
+
+## Stage 3 — Procedural Shelf Stocker Tool
+
+### Added
+- `src/tools/shelf_stocker.gd` — Editor `@tool` script (Node3D) that procedurally spawns branded item grids.
+- `tests/test_shelf_stocker.gd` — QA test that generates grids, swaps brands, and verifies node counts.
+
+### Bugs Fixed During Review
+1. **`this` → `self`** — GDScript has no `this` keyword; used `self` for `item.owner` assignment (line 144).
+2. **Re-entrant generation** — Property setters for brand/grid could call `_generate_shelf` while `generate` toggle also calls it. Added `_is_generating` guard flag.
+3. **`queue_free` in clear step** — Deferred deletion caused temporary duplicates during regeneration. Switched to immediate `free()` in the editor-only clear path.
+
+### Design Details
+- Exports: `brand_data`, `grid_width` (1–20), `grid_height` (1–20), `spacing` (Vector3), `generate` (bool toggle).
+- Grid layout: nested loops, items placed at `(x*spacing.x, y*spacing.y, 0)`.
+- Mirror variant: 50% chance per item; flips mesh transform on Z axis.
+- Container types: `can` (cylinder), `bottle` (cylinder), `bag` (box), default (box).
+- Material: pulls `product_texture` from BrandData; falls back to random pastel color.
+- Protection: all generation gated by `Engine.is_editor_hint()` — never runs in-game.
