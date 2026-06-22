@@ -1,14 +1,14 @@
 [config]
 name="WWJMD"
 version="0.1.0"
-description="What Would John McClain Do? — A 3D FPS destruction sandbox"
+description="What Would John McClain Do? - A 3D FPS destruction sandbox"
 
 [application]
 icon="res://assets/icon.svg"
 
 [rendering]
 renderer="forward_plus"
-environment/default=res://assets/default_env.tres
+environment/default="res://assets/default_env.tres"
 
 [input]
 move_forward={
@@ -45,8 +45,8 @@ melee={
 }
 sprint={
 "deadzone":0.5,
-"events":[{"type":2,"device":1,"key":16777248}
-]}
+"events":[{"type":2,"device":1,"key":16777248}]
+}
 
 [physics]
 3d/gravity=9.8
