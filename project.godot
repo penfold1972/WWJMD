@@ -4,7 +4,6 @@ version="0.1.0"
 description="What Would John McClain Do? — A 3D FPS destruction sandbox"
 
 [application]
-run_mode=current
 icon="res://assets/icon.svg"
 
 [rendering]
