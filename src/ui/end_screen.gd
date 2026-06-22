@@ -4,13 +4,9 @@ extends CanvasLayer
 ## Wired to the getaway van exit trigger
 
 func _ready():
-	_show_immediately()
+	_build_ui()
 
-static func show() -> void:
-	var scene = load("res://src/ui/end_screen.gd").new()
-	get_tree().current_scene.add_child(scene)
-
-func _show_immediately() -> void:
+func build_ui() -> void:
 	# Dimmed background
 	var bg = ColorRect.new()
 	bg.color = Color(0.0, 0.0, 0.0, 0.7)

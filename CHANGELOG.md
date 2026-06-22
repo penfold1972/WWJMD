@@ -101,6 +101,11 @@
 6. **`shelf_stocker.gd` — Duplicate item names** — all items got `ShelfItem_<grid_w>_<grid_h>` (same for every item). Changed to use `_generated_items.size()` for unique names.
 7. **`test_destruction.gd` — Fragment cleanup checked wrong group** — used `get_nodes_in_group("fragments")` but fragments are never added to a group. Changed to count `RigidBody3D` children.
 
+### Godot 4 Compatibility Fixes
+- **`default_env.tres`** — Invalid format; removed. Environment reference removed from `project.godot`.
+- **`end_screen.gd`** — Renamed `show()` → `build_ui()`. `CanvasLayer` has a built-in `show()` method inherited from `Node`, causing a static-function conflict. Also removed static qualifier — `get_tree()` can't be called from a static context.
+- **`game_manager.gd`** — Changed `end.show()` to `end_script.new()` + `end_screen.build_ui()`.
+
 ### Assets Added (needed to run in Godot)
 - `assets/icon.svg` — Project icon with "WWJMD v0.1.0" branding.
 - `assets/default_env.tres` — Default environment (ambient color, sky energy) so viewport isn't black.
@@ -131,5 +136,5 @@ Complete rewrite of the convenience store layout per user specs:
 ### Game Loop Wiring
 - `src/core/game_manager.gd` — New root game loop: builds level, spawns player, connects exit trigger → end screen.
 - `src/ui/end_screen.gd` — CanvasLayer overlay with "MISSION COMPLETE" title, "Play Again" (reloads scene) and "Quit Game" (quits) buttons.
-- Exit flow: Player reaches getaway van → Area3D detects CharacterBody3D → `level_exit_triggered` signal → `GameManager._on_level_exit()` → `EndScreen.show()` overlay.
+- Exit flow: Player reaches getaway van → Area3D detects CharacterBody3D → `level_exit_triggered` signal → `GameManager._on_level_exit()` → `EndScreen.build_ui()` overlay.
 - When no `player_scene` is assigned, GameManager spawns a default CharacterBody3D + Camera3D automatically.

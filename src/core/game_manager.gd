@@ -47,5 +47,7 @@ func _connect_exit_trigger() -> void:
 
 func _on_level_exit() -> void:
 	print("GameManager: level exit triggered — showing end screen")
-	var end = preload("res://src/ui/end_screen.gd")
-	end.show()
+	var end_script = preload("res://src/ui/end_screen.gd")
+	var end_screen = end_script.new() as CanvasLayer
+	add_child(end_screen)
+	end_screen.build_ui()
