@@ -1,54 +1,100 @@
+config_version=5
+
+[application]
+
+config/features=PackedStringArray("4.7")
+icon="res://assets/icon.svg"
+config/name="What Would John McClain Do?"
+
 [config]
+
 name="WWJMD"
 version="0.1.0"
 description="What Would John McClain Do? - A 3D FPS destruction sandbox"
 
-[application]
-icon="res://assets/icon.svg"
+[debug]
 
-[rendering]
-renderer="forward_plus"
+settings/gdscript/warnings/treat_warnings_as_errors=false
 
 [input]
+
 move_forward={
-"deadzone":0.5,
-"events":[{"type":2,"device":1,"key":87}]
+"deadzone": 0.5,
+"events": [{
+"device": 1,
+"key": 87,
+"type": 2
+}]
 }
 move_backward={
-"deadzone":0.5,
-"events":[{"type":2,"device":1,"key":83}]
+"deadzone": 0.5,
+"events": [{
+"device": 1,
+"key": 83,
+"type": 2
+}]
 }
 move_left={
-"deadzone":0.5,
-"events":[{"type":2,"device":1,"key":65}]
+"deadzone": 0.5,
+"events": [{
+"device": 1,
+"key": 65,
+"type": 2
+}]
 }
 move_right={
-"deadzone":0.5,
-"events":[{"type":2,"device":1,"key":68}]
+"deadzone": 0.5,
+"events": [{
+"device": 1,
+"key": 68,
+"type": 2
+}]
 }
 look_left={
-"deadzone":0.5,
-"events":[{"type":2,"device":1,"key":81}]
+"deadzone": 0.5,
+"events": [{
+"device": 1,
+"key": 81,
+"type": 2
+}]
 }
 look_right={
-"deadzone":0.5,
-"events":[{"type":2,"device":1,"key":69}]
+"deadzone": 0.5,
+"events": [{
+"device": 1,
+"key": 69,
+"type": 2
+}]
 }
 shoot={
-"deadzone":0.5,
-"events":[{"type":2,"device":1,"key":32}]
+"deadzone": 0.5,
+"events": [{
+"device": 1,
+"key": 32,
+"type": 2
+}]
 }
 melee={
-"deadzone":0.5,
-"events":[{"type":2,"device":1,"key":81}]
+"deadzone": 0.5,
+"events": [{
+"device": 1,
+"key": 81,
+"type": 2
+}]
 }
 sprint={
-"deadzone":0.5,
-"events":[{"type":2,"device":1,"key":16777248}]
+"deadzone": 0.5,
+"events": [{
+"device": 1,
+"key": 16777248,
+"type": 2
+}]
 }
 
 [physics]
+
 3d/gravity=9.8
 
-[debug]
-settings/gdscript/warnings/treat_warnings_as_errors=false
+[rendering]
+
+renderer="forward_plus"
