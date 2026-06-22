@@ -4,7 +4,7 @@ extends CanvasLayer
 ## Wired to the getaway van exit trigger
 
 func _ready():
-	_build_ui()
+	build_ui()
 
 func build_ui() -> void:
 	# Dimmed background
