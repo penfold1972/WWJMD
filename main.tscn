@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="script" path="res://src/core/game_manager.gd" id="1"]
+
+[node name="WWJMD" type="Node"]
+script = "res://src/core/game_manager.gd"
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+light_color = Color(1, 1, 0.95, 1)
+transform.rotation = Vector3(-0.5, -0.3, 0)
+
+[node name="Ambient" type="OmniLight3D" parent="."]
+light_color = Color(0.6, 0.6, 0.7, 1)
+light_energy = 0.4
+transform.origin = Vector3(0, 4, 0)

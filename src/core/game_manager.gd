@@ -32,6 +32,8 @@ func _spawn_player() -> void:
 		var cam = Camera3D.new()
 		cam.name = "Camera3D"
 		body.add_child(cam)
+		var pc = preload("res://src/entities/player_controller.gd")
+		body.set_script(pc)
 		_player = body
 	else:
 		_player = player_scene.instantiate() as CharacterBody3D
