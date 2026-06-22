@@ -11,7 +11,8 @@
 ├── src/
 │   ├── core/                    # Core systems & singletons
 │   │   ├── globals.gd
-│   │   └── level_builder.gd          # Stage 4 store floor plan
+│   │   ├── level_builder.gd          # Stage 4 store floor plan
+│   │   └── game_manager.gd           # Refinement: game loop root
 │   ├── entities/                # Player, AI, destructibles
 │   │   ├── player_controller.gd
 │   │   ├── destructible_item.gd      # Stage 2
@@ -19,6 +20,8 @@
 │   ├── objects/                 # Level props & containers
 │   ├── tools/                   # Editor utilities
 │   │   └── shelf_stocker.gd          # Stage 3 @tool
+│   ├── ui/                      # Menus & overlays
+│   │   └── end_screen.gd             # Refinement: Play Again / Quit overlay
 │   └── resources/               # Custom resources
 │       └── brand_data.gd             # Stage 2
 │

@@ -127,3 +127,9 @@ Complete rewrite of the convenience store layout per user specs:
 - Front wall split into two segments with a 1.2-unit door gap.
 - NPC spawn points redistributed across the store interior.
 - QA test updated to verify all 6 new features (cooler, manager door, bathroom, code lock, van, exit trigger).
+
+### Game Loop Wiring
+- `src/core/game_manager.gd` — New root game loop: builds level, spawns player, connects exit trigger → end screen.
+- `src/ui/end_screen.gd` — CanvasLayer overlay with "MISSION COMPLETE" title, "Play Again" (reloads scene) and "Quit Game" (quits) buttons.
+- Exit flow: Player reaches getaway van → Area3D detects CharacterBody3D → `level_exit_triggered` signal → `GameManager._on_level_exit()` → `EndScreen.show()` overlay.
+- When no `player_scene` is assigned, GameManager spawns a default CharacterBody3D + Camera3D automatically.
