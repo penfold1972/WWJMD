@@ -16,10 +16,25 @@ extends Node3D
 @export var civilian_count: int = 3
 @export var cop_count: int = 2
 
+const DestructibleScript = preload("res://src/entities/destructible_item.gd")
+const BrandDataScript = preload("res://src/resources/brand_data.gd")
+const ShelfStockerScript = preload("res://src/tools/shelf_stocker.gd")
+
+# Placeholder brands: [name, container_class, destruction_class, color]
+const BRANDS = [
+	["Chippy O's", "bag", "debris", Color(0.9, 0.75, 0.2)],
+	["Fizz Cola", "can", "liquid", Color(0.85, 0.15, 0.15)],
+	["ChocoBar", "box", "debris", Color(0.45, 0.28, 0.15)],
+	["Aqua Pure", "bottle", "liquid", Color(0.3, 0.55, 0.9)],
+]
+
 var _walls: Array[Node] = []
 var _shelves: Array[Node] = []
+var _snacks_destroyed: int = 0
+var _exit_fired: bool = false
 
 signal level_exit_triggered()
+signal snack_destroyed(total: int)
 
 func build_level() -> void:
 	_build_floor()
@@ -29,6 +44,7 @@ func build_level() -> void:
 	_build_manager_office()
 	_build_checkout_counter()
 	_build_aisles()
+	_stock_shelves()
 	_build_parking_lot()
 	_build_getaway_van()
 	_build_exit_trigger()
@@ -161,6 +177,66 @@ func _build_aisles() -> void:
 			add_child(shelf)
 			_shelves.append(shelf)
 
+func _stock_shelves() -> void:
+	# Place destructible branded snacks on top of every aisle shelf.
+	# Shelf tops sit at y = 1.6 (center 0.8 + half height 0.8).
+	var shelf_top_y = 1.6
+	for i in _shelves.size():
+		var shelf: Node3D = _shelves[i]
+		var brand_row = BRANDS[i % BRANDS.size()]
+		for slot in 3:
+			var z_offset = (slot - 1) * 0.28
+			var snack = _make_snack(brand_row)
+			add_child(snack)
+			var half_h = _mesh_half_height(snack.get_meta("mesh_instance").mesh)
+			snack.position = shelf.position + Vector3(0, shelf_top_y - shelf.position.y + half_h, z_offset)
+
+func _make_snack(brand_row: Array) -> Node3D:
+	var brand = BrandDataScript.new()
+	brand.brand_name = brand_row[0]
+	brand.container_class = brand_row[1]
+	brand.destruction_class = brand_row[2]
+
+	var mesh_map = ShelfStockerScript.build_mesh_map(brand.container_class)
+
+	var item = Node3D.new()
+	item.name = "Snack_%s" % brand.brand_name.replace(" ", "").replace("'", "")
+	item.set_script(DestructibleScript)
+	item.brand_data = brand
+	item.max_health = 30.0
+	item.dent_threshold = 20.0
+	item.damaged_threshold = 10.0
+	item.fragment_count = 6
+
+	var mi = MeshInstance3D.new()
+	mi.name = "MeshInstance3D"
+	mi.mesh = mesh_map["mesh"]
+	var mat = StandardMaterial3D.new()
+	mat.albedo_color = brand_row[3]
+	mi.material_override = mat
+	item.add_child(mi)
+
+	var body = StaticBody3D.new()
+	var col = CollisionShape3D.new()
+	col.shape = mesh_map["collider"]
+	body.add_child(col)
+	item.add_child(body)
+
+	item.set_meta("mesh_instance", mi)
+	item.destroyed.connect(_on_snack_destroyed)
+	return item
+
+func _on_snack_destroyed() -> void:
+	_snacks_destroyed += 1
+	snack_destroyed.emit(_snacks_destroyed)
+
+func _mesh_half_height(mesh: Mesh) -> float:
+	if mesh is CylinderMesh:
+		return mesh.height * 0.5
+	if mesh is BoxMesh:
+		return mesh.size.y * 0.5
+	return 0.1
+
 func _build_parking_lot() -> void:
 	var hd = store_depth * 0.5
 	var exterior_z = hd + 1.0  # just past the front wall
@@ -225,9 +301,11 @@ func _build_exit_trigger() -> void:
 	area.body_entered.connect(_on_exit_area_entered)
 
 func _on_exit_area_entered(body: Node) -> void:
-	if body is CharacterBody3D:
-		level_exit_triggered.emit()
-		print("LevelBuilder: exit trigger activated by %s" % body.name)
+	if _exit_fired or not body.is_in_group("player"):
+		return
+	_exit_fired = true
+	level_exit_triggered.emit()
+	print("LevelBuilder: exit trigger activated by %s" % body.name)
 
 func _spawn_npcs() -> void:
 	if enemy_template == null:
@@ -247,8 +325,8 @@ func _spawn_npcs() -> void:
 			break
 		var npc = enemy_template.instantiate() as Node3D
 		npc.name = "NPC_%s_%d" % ["Cop" if i < cop_count else "Civilian", i]
-		npc.global_transform.origin = spawn_points[i]
 		add_child(npc)
+		npc.global_position = spawn_points[i]
 
 func _make_box(w: float, h: float, d: float, pos: Vector3, color: Color) -> Node3D:
 	var node = Node3D.new()

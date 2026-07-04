@@ -2,16 +2,16 @@ config_version=5
 
 [application]
 
-config/features=PackedStringArray("4.7")
-icon="res://assets/icon.svg"
 config/name="What Would John McClain Do?"
+config/description="What Would John McClain Do? - A 3D FPS destruction sandbox"
+config/version="0.1.0"
 run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.5")
+icon="res://assets/icon.svg"
 
-[config]
+[autoload]
 
-name="WWJMD"
-version="0.1.0"
-description="What Would John McClain Do? - A 3D FPS destruction sandbox"
+Globals="*res://src/core/globals.gd"
 
 [debug]
 
@@ -21,81 +21,49 @@ settings/gdscript/warnings/treat_warnings_as_errors=false
 
 move_forward={
 "deadzone": 0.5,
-"events": [{
-"device": 1,
-"key": 87,
-"type": 2
-}]
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":87,"key_label":0,"unicode":119,"location":0,"echo":false,"script":null)
+]
 }
 move_backward={
 "deadzone": 0.5,
-"events": [{
-"device": 1,
-"key": 83,
-"type": 2
-}]
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":115,"location":0,"echo":false,"script":null)
+]
 }
 move_left={
 "deadzone": 0.5,
-"events": [{
-"device": 1,
-"key": 65,
-"type": 2
-}]
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":65,"key_label":0,"unicode":97,"location":0,"echo":false,"script":null)
+]
 }
 move_right={
 "deadzone": 0.5,
-"events": [{
-"device": 1,
-"key": 68,
-"type": 2
-}]
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":68,"key_label":0,"unicode":100,"location":0,"echo":false,"script":null)
+]
 }
-look_left={
+jump={
 "deadzone": 0.5,
-"events": [{
-"device": 1,
-"key": 81,
-"type": 2
-}]
-}
-look_right={
-"deadzone": 0.5,
-"events": [{
-"device": 1,
-"key": 69,
-"type": 2
-}]
-}
-shoot={
-"deadzone": 0.5,
-"events": [{
-"device": 1,
-"key": 32,
-"type": 2
-}]
-}
-melee={
-"deadzone": 0.5,
-"events": [{
-"device": 1,
-"key": 81,
-"type": 2
-}]
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":32,"key_label":0,"unicode":32,"location":0,"echo":false,"script":null)
+]
 }
 sprint={
 "deadzone": 0.5,
-"events": [{
-"device": 1,
-"key": 16777248,
-"type": 2
-}]
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194325,"key_label":0,"unicode":0,"location":1,"echo":false,"script":null)
+]
+}
+shoot={
+"deadzone": 0.5,
+"events": [Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":0,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":1,"canceled":false,"pressed":false,"double_click":false,"script":null)
+]
+}
+melee={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":69,"key_label":0,"unicode":101,"location":0,"echo":false,"script":null)
+]
 }
 
 [physics]
 
-3d/gravity=9.8
+3d/default_gravity=9.8
 
 [rendering]
 
-renderer="forward_plus"
+renderer/rendering_method="forward_plus"

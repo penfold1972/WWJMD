@@ -1,3 +1,4 @@
+class_name BrandData
 extends Resource
 
 ## WWJMD Brand Data — Custom Resource

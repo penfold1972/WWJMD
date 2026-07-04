@@ -51,7 +51,7 @@ func _generate_shelf() -> void:
 	var container = bd.get("container_class") if bd else "box"
 	container = container if container is String else "box"
 
-	var mesh_map := _build_mesh_map(container)
+	var mesh_map := build_mesh_map(container)
 	var mat := _make_material(bd)
 
 	for y in grid_height:
@@ -75,7 +75,7 @@ func _clear_shelf() -> void:
 			child.free()
 	_generated_items.clear()
 
-func _build_mesh_map(container: String) -> Dictionary:
+static func build_mesh_map(container: String) -> Dictionary:
 	# Returns { mesh: Mesh, collider: Shape3D } for the given container type
 	var map = {}
 	match container:
@@ -148,5 +148,6 @@ func _spawn_item(origin: Vector3, mesh_map: Dictionary, mat: Material) -> Node3D
 	item.transform.origin = origin
 
 	add_child(item)
-	item.owner = self  # Make visible in editor tree
+	if Engine.is_editor_hint() and get_tree() and get_tree().edited_scene_root:
+		item.owner = get_tree().edited_scene_root  # Persist in the edited scene
 	return item

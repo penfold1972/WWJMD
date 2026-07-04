@@ -7,13 +7,19 @@ extends CharacterBody3D
 @export var move_speed: float = 5.0
 @export var sprint_multiplier: float = 1.5
 @export var acceleration: float = 12.0
-@export var friction: float = 0.85  # unused; kept for tuning API
+@export var jump_speed: float = 4.5
+@export var shot_damage: float = 10.0
+@export var shot_range: float = 100.0
 
 var _camera: Camera3D
 var _input_dir: Vector2
 var _is_sprinting: bool = false
+var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
+
+signal shot_fired(hit_point: Vector3, hit_node: Node)
 
 func _ready():
+	add_to_group("player")
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	_camera = $Camera3D as Camera3D
 	assert(_camera != null, "Player must have a Camera3D child named 'Camera3D'")
@@ -24,11 +30,20 @@ func _input(event: InputEvent):
 		var look_pitch = -event.relative.y * mouse_sensitivity
 		_camera.rotation.x = clamp(_camera.rotation.x + look_pitch, -1.4, 1.4)
 		rotate_y(look_yaw)
+	elif event.is_action_pressed("ui_cancel"):
+		# Escape releases the mouse so the player can reach the window/UI
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	elif event is InputEventMouseButton and event.pressed:
+		if Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:
+			# Click recaptures; swallow it so it doesn't also fire a shot
+			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+			get_viewport().set_input_as_handled()
 
-func _process(_delta: float):
-	# Capture mouse on any click when UI is visible
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:
-		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+func _unhandled_input(event: InputEvent):
+	# Shooting lives in unhandled input so UI clicks and the
+	# mouse-recapture click never double as shots
+	if event.is_action_pressed("shoot") and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+		_shoot()
 
 func _physics_process(delta: float):
 	_input_dir = Vector2(
@@ -52,4 +67,30 @@ func _physics_process(delta: float):
 	velocity.x = h_vel.x
 	velocity.z = h_vel.z
 
+	if is_on_floor():
+		if Input.is_action_just_pressed("jump"):
+			velocity.y = jump_speed
+	else:
+		velocity.y -= _gravity * delta
+
 	move_and_slide()
+
+func _shoot() -> void:
+	var from = _camera.global_position
+	var to = from + (-_camera.global_transform.basis.z) * shot_range
+	var query = PhysicsRayQueryParameters3D.create(from, to)
+	query.exclude = [get_rid()]
+	var result = get_world_3d().direct_space_state.intersect_ray(query)
+	if result.is_empty():
+		return
+
+	var hit: Node = result["collider"]
+	shot_fired.emit(result["position"], hit)
+
+	# Route damage to the nearest ancestor that understands it
+	var node: Node = hit
+	while node:
+		if node.has_method("apply_damage"):
+			node.apply_damage(shot_damage)
+			return
+		node = node.get_parent()

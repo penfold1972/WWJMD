@@ -138,3 +138,43 @@ Complete rewrite of the convenience store layout per user specs:
 - `src/ui/end_screen.gd` — CanvasLayer overlay with "MISSION COMPLETE" title, "Play Again" (reloads scene) and "Quit Game" (quits) buttons.
 - Exit flow: Player reaches getaway van → Area3D detects CharacterBody3D → `level_exit_triggered` signal → `GameManager._on_level_exit()` → `EndScreen.build_ui()` overlay.
 - When no `player_scene` is assigned, GameManager spawns a default CharacterBody3D + Camera3D automatically.
+
+## Playable Tutorial Pass — end-to-end gameplay loop
+
+### Fixed (blocking — project could not run)
+1. **`main.tscn` invalid scene syntax** — `script` was assigned a string path instead of
+   `ExtResource("1")`, and `transform.rotation`/`transform.origin` are not valid `.tscn`
+   keys. Rewrote the scene with proper `Transform3D(...)` values, added a
+   `WorldEnvironment` with ambient light and shadow-casting sun.
+2. **Input map was Godot 3 format** — `{"device": 1, "key": ..., "type": 2}` dictionaries
+   don't deserialize into Godot 4 `InputEvent`s, so every action was empty. Rewrote all
+   actions as `Object(InputEventKey/InputEventMouseButton, ...)`. New bindings:
+   WASD move, Space jump, Shift sprint, Left Mouse shoot, E melee (reserved), Esc releases mouse.
+3. **`global_transform` set before `add_child()`** in `game_manager` (player) and
+   `level_builder` (NPCs) — errors in Godot 4 and loses the position. Reordered.
+4. **Player had no collision shape, no gravity, camera at floor level** — added
+   `src/entities/player.tscn` (capsule collider, camera at 1.6 m) and gravity + jump
+   in `player_controller.gd`.
+5. **`[physics] 3d/gravity` / `[rendering] renderer`** were Godot 3 setting names —
+   now `3d/default_gravity` and `renderer/rendering_method`.
+6. **`globals.gd` registered as autoload** (was written as one but never registered).
+
+### Added (gameplay loop)
+- **Hitscan shooting**: camera raycast on `shoot`, damage routed to the nearest ancestor
+  with `apply_damage()` — lives in `_unhandled_input` so UI/recapture clicks never fire.
+- **Stocked shelves**: `level_builder._stock_shelves()` places 3 destructible snacks per
+  aisle shelf using 4 placeholder brands (bag/can/box/bottle) via BrandData; mesh shapes
+  reuse `ShelfStocker.build_mesh_map()` (now static).
+- **HUD** (`src/ui/hud.gd`): crosshair, "Snacks destroyed" counter (wired to the new
+  `snack_destroyed` signal), objective hint.
+- **Fall respawn**: game manager resets the player if they fall off the world.
+
+### Fixed (gameplay)
+- End screen was built twice (once in `_ready`, once by the game manager) and appeared
+  with the mouse still captured — now built once, shows the cursor, pauses the tree,
+  and uses a properly centered container layout.
+- Exit trigger fired for any `CharacterBody3D` and could fire repeatedly — now
+  player-group-only and one-shot.
+- `shelf_stocker.gd` set `item.owner = self`, which only persists when the stocker is
+  the scene root — now uses `edited_scene_root`.
+- `brand_data.gd` gained `class_name BrandData`.

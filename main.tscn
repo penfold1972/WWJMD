@@ -1,15 +1,27 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
-[ext_resource type="script" path="res://src/core/game_manager.gd" id="1"]
+[ext_resource type="Script" path="res://src/core/game_manager.gd" id="1"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.54, 0.65, 0.78, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.9, 0.9, 1, 1)
+ambient_light_energy = 0.6
 
 [node name="WWJMD" type="Node"]
-script = "res://src/core/game_manager.gd"
+script = ExtResource("1")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.921061, 0.292562, -0.25701, 0, 0.659983, 0.75128, 0.389418, -0.691975, 0.607885, 0, 10, 0)
 light_color = Color(1, 1, 0.95, 1)
-transform.rotation = Vector3(-0.5, -0.3, 0)
+shadow_enabled = true
 
-[node name="Ambient" type="OmniLight3D" parent="."]
-light_color = Color(0.6, 0.6, 0.7, 1)
-light_energy = 0.4
-transform.origin = Vector3(0, 4, 0)
+[node name="StoreLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+light_color = Color(1, 0.98, 0.9, 1)
+light_energy = 1.2
+omni_range = 14.0
