@@ -28,11 +28,11 @@ const BRANDS = [
 	["Aqua Pure", "bottle", "liquid", Color(0.3, 0.55, 0.9)],
 ]
 
-# Gondola shelf layout: board surface heights, snack row offset per side,
-# and snack slots along each board
+# Gondola shelf layout: board surface heights, then per side a 3x3 snack
+# grid — 3 columns along the board (x) by 3 rows deep (z, away from the spine)
 const SHELF_LEVEL_YS = [0.4, 0.85, 1.3, 1.75]
-const SHELF_SIDE_Z = 0.18
-const SHELF_SLOT_XS = [-0.72, -0.24, 0.24, 0.72]
+const SHELF_SLOT_XS = [-0.6, 0.0, 0.6]
+const SHELF_ROW_ZS = [0.14, 0.3, 0.46]
 
 var _walls: Array[Node] = []
 var _shelves: Array[Node] = []
@@ -197,7 +197,7 @@ func _build_shelf_unit(pos: Vector3) -> Node3D:
 	unit.add_child(spine)
 
 	for i in SHELF_LEVEL_YS.size():
-		var board = _make_box(2.0, 0.05, 0.7, Vector3(0, SHELF_LEVEL_YS[i] - 0.025, 0), Color(0.5, 0.5, 0.6))
+		var board = _make_box(2.0, 0.05, 1.1, Vector3(0, SHELF_LEVEL_YS[i] - 0.025, 0), Color(0.5, 0.5, 0.6))
 		board.name = "Board_%d" % i
 		unit.add_child(board)
 
@@ -212,12 +212,14 @@ func _stock_shelves() -> void:
 			for side in 2:
 				# Vary the brand per unit/level/side so aisles look mixed
 				var kit = _brand_kits[(i + level * 2 + side) % _brand_kits.size()]
-				var z = SHELF_SIDE_Z * (1.0 if side == 0 else -1.0)
+				var side_sign = 1.0 if side == 0 else -1.0
 				var half_h = _mesh_half_height(kit["mesh_map"]["mesh"])
 				for slot_x in SHELF_SLOT_XS:
-					var snack = _make_snack(kit)
-					unit.add_child(snack)
-					snack.position = Vector3(slot_x, SHELF_LEVEL_YS[level] + half_h, z)
+					for row_z in SHELF_ROW_ZS:
+						var snack = _make_snack(kit)
+						unit.add_child(snack)
+						snack.position = Vector3(
+							slot_x, SHELF_LEVEL_YS[level] + half_h, side_sign * row_z)
 
 func _build_brand_kits() -> void:
 	# One shared BrandData/mesh/material set per brand — every snack instance
@@ -237,8 +239,10 @@ func _build_brand_kits() -> void:
 		})
 
 func _make_snack(kit: Dictionary) -> Node3D:
+	# RigidBody3D root, frozen by the destructible script until a nearby
+	# destruction blasts it loose
 	var brand: BrandData = kit["brand"]
-	var item = Node3D.new()
+	var item = RigidBody3D.new()
 	item.name = "Snack_%s" % brand.brand_name.replace(" ", "").replace("'", "")
 	item.set_script(DestructibleScript)
 	item.brand_data = brand
@@ -246,6 +250,7 @@ func _make_snack(kit: Dictionary) -> Node3D:
 	item.dent_threshold = 20.0
 	item.damaged_threshold = 10.0
 	item.fragment_count = 4
+	item.mass = 0.3
 
 	var mi = MeshInstance3D.new()
 	mi.name = "MeshInstance3D"
@@ -253,11 +258,9 @@ func _make_snack(kit: Dictionary) -> Node3D:
 	mi.material_override = kit["material"]
 	item.add_child(mi)
 
-	var body = StaticBody3D.new()
 	var col = CollisionShape3D.new()
 	col.shape = kit["mesh_map"]["collider"]
-	body.add_child(col)
-	item.add_child(body)
+	item.add_child(col)
 
 	item.set_meta("mesh_instance", mi)
 	item.destroyed.connect(_on_snack_destroyed)

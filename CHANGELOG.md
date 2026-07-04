@@ -197,3 +197,19 @@ Complete rewrite of the convenience store layout per user specs:
 - **Scoring**: +10 per collected snack, -5 per destroyed snack. Live
   Collected/Destroyed/Score readout on the HUD; final tally on the end screen.
 - `.gitignore`: ignore Godot 4.4+ `*.uid` companion files.
+
+## 3x3 Shelf Groups & Explosion Physics
+
+### Changed
+- **Snacks now sit in 3x3 groups** per shelf side per level (3 columns x 3 rows deep)
+  instead of a single row — 72 snacks per gondola, 864 in the store. Shelf boards
+  widened to 1.1 m deep to hold the grid.
+- **Snacks are now frozen RigidBody3D items** (destructible_item.gd extends
+  RigidBody3D). Frozen bodies behave as static scenery, so hundreds cost nothing.
+
+### Added
+- **Explosion knock-back**: destroying a snack blasts every snack within 0.7 m —
+  they unfreeze, take a distance-scaled impulse (slightly upward-biased), and become
+  live physics objects that slide along the shelf or tumble off it. Cans and bottles
+  roll. Destroyed items drop out of collision immediately so neighbors fly through
+  the space they occupied. Knocked-down snacks remain shootable and collectible.
