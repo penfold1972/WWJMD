@@ -10,13 +10,16 @@ extends CharacterBody3D
 @export var jump_speed: float = 4.5
 @export var shot_damage: float = 10.0
 @export var shot_range: float = 100.0
+@export var interact_range: float = 2.5
 
 var _camera: Camera3D
 var _input_dir: Vector2
 var _is_sprinting: bool = false
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
+var _interact_target: Node = null
 
 signal shot_fired(hit_point: Vector3, hit_node: Node)
+signal interact_target_changed(has_target: bool)
 
 func _ready():
 	add_to_group("player")
@@ -44,6 +47,8 @@ func _unhandled_input(event: InputEvent):
 	# mouse-recapture click never double as shots
 	if event.is_action_pressed("shoot") and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 		_shoot()
+	elif event.is_action_pressed("interact") and is_instance_valid(_interact_target):
+		_interact_target.collect()
 
 func _physics_process(delta: float):
 	_input_dir = Vector2(
@@ -74,23 +79,43 @@ func _physics_process(delta: float):
 		velocity.y -= _gravity * delta
 
 	move_and_slide()
+	_update_interact_target()
 
 func _shoot() -> void:
-	var from = _camera.global_position
-	var to = from + (-_camera.global_transform.basis.z) * shot_range
-	var query = PhysicsRayQueryParameters3D.create(from, to)
-	query.exclude = [get_rid()]
-	var result = get_world_3d().direct_space_state.intersect_ray(query)
-	if result.is_empty():
+	var hit = _camera_raycast(shot_range)
+	if hit.is_empty():
 		return
 
-	var hit: Node = result["collider"]
-	shot_fired.emit(result["position"], hit)
+	shot_fired.emit(hit["position"], hit["collider"])
 
 	# Route damage to the nearest ancestor that understands it
-	var node: Node = hit
+	var handler = _find_ancestor_with(hit["collider"], "apply_damage")
+	if handler:
+		handler.apply_damage(shot_damage)
+
+func _update_interact_target() -> void:
+	# Track what collectible (if any) the crosshair rests on, for the HUD prompt
+	var target: Node = null
+	if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+		var hit = _camera_raycast(interact_range)
+		if not hit.is_empty():
+			target = _find_ancestor_with(hit["collider"], "collect")
+
+	if target != _interact_target:
+		_interact_target = target
+		interact_target_changed.emit(target != null)
+
+func _camera_raycast(distance: float) -> Dictionary:
+	var from = _camera.global_position
+	var to = from + (-_camera.global_transform.basis.z) * distance
+	var query = PhysicsRayQueryParameters3D.create(from, to)
+	query.exclude = [get_rid()]
+	return get_world_3d().direct_space_state.intersect_ray(query)
+
+func _find_ancestor_with(start: Node, method: String) -> Node:
+	var node: Node = start
 	while node:
-		if node.has_method("apply_damage"):
-			node.apply_damage(shot_damage)
-			return
+		if node.has_method(method):
+			return node
 		node = node.get_parent()
+	return null

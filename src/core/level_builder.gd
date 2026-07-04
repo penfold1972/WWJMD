@@ -28,13 +28,22 @@ const BRANDS = [
 	["Aqua Pure", "bottle", "liquid", Color(0.3, 0.55, 0.9)],
 ]
 
+# Gondola shelf layout: board surface heights, snack row offset per side,
+# and snack slots along each board
+const SHELF_LEVEL_YS = [0.4, 0.85, 1.3, 1.75]
+const SHELF_SIDE_Z = 0.18
+const SHELF_SLOT_XS = [-0.72, -0.24, 0.24, 0.72]
+
 var _walls: Array[Node] = []
 var _shelves: Array[Node] = []
+var _brand_kits: Array = []
 var _snacks_destroyed: int = 0
+var _snacks_collected: int = 0
 var _exit_fired: bool = false
 
 signal level_exit_triggered()
 signal snack_destroyed(total: int)
+signal snack_collected(total: int)
 
 func build_level() -> void:
 	_build_floor()
@@ -164,6 +173,7 @@ func _build_checkout_counter() -> void:
 	add_child(reg)
 
 func _build_aisles() -> void:
+	# Rows of double-sided gondola shelf units with 4 stocked levels each
 	var hd = store_depth * 0.5
 	var aisle_z_start = -hd + 3.0
 	var aisle_z_step = (hd * 2 - 6.0) / (aisle_count + 1)
@@ -172,33 +182,62 @@ func _build_aisles() -> void:
 		var z = aisle_z_start + (row + 1) * aisle_z_step
 		for col in shelf_per_aisle:
 			var x = -6.0 + col * 2.5
-			var shelf = _make_box(0.6, 1.6, 0.8, Vector3(x, 0.8, z), Color(0.6, 0.6, 0.7))
-			shelf.name = "AisleShelf_%d_%d" % [row, col]
-			add_child(shelf)
-			_shelves.append(shelf)
+			var unit = _build_shelf_unit(Vector3(x, 0, z))
+			unit.name = "AisleShelf_%d_%d" % [row, col]
+			_shelves.append(unit)
+
+func _build_shelf_unit(pos: Vector3) -> Node3D:
+	# Gondola: central spine panel with a board per level; snacks go on both sides
+	var unit = Node3D.new()
+	add_child(unit)
+	unit.position = pos
+
+	var spine = _make_box(2.0, 2.0, 0.1, Vector3(0, 1.0, 0), Color(0.6, 0.6, 0.7))
+	spine.name = "Spine"
+	unit.add_child(spine)
+
+	for i in SHELF_LEVEL_YS.size():
+		var board = _make_box(2.0, 0.05, 0.7, Vector3(0, SHELF_LEVEL_YS[i] - 0.025, 0), Color(0.5, 0.5, 0.6))
+		board.name = "Board_%d" % i
+		unit.add_child(board)
+
+	return unit
 
 func _stock_shelves() -> void:
-	# Place destructible branded snacks on top of every aisle shelf.
-	# Shelf tops sit at y = 1.6 (center 0.8 + half height 0.8).
-	var shelf_top_y = 1.6
+	# Fill every level of every gondola on both sides with destructible snacks
+	_build_brand_kits()
 	for i in _shelves.size():
-		var shelf: Node3D = _shelves[i]
-		var brand_row = BRANDS[i % BRANDS.size()]
-		for slot in 3:
-			var z_offset = (slot - 1) * 0.28
-			var snack = _make_snack(brand_row)
-			add_child(snack)
-			var half_h = _mesh_half_height(snack.get_meta("mesh_instance").mesh)
-			snack.position = shelf.position + Vector3(0, shelf_top_y - shelf.position.y + half_h, z_offset)
+		var unit: Node3D = _shelves[i]
+		for level in SHELF_LEVEL_YS.size():
+			for side in 2:
+				# Vary the brand per unit/level/side so aisles look mixed
+				var kit = _brand_kits[(i + level * 2 + side) % _brand_kits.size()]
+				var z = SHELF_SIDE_Z * (1.0 if side == 0 else -1.0)
+				var half_h = _mesh_half_height(kit["mesh_map"]["mesh"])
+				for slot_x in SHELF_SLOT_XS:
+					var snack = _make_snack(kit)
+					unit.add_child(snack)
+					snack.position = Vector3(slot_x, SHELF_LEVEL_YS[level] + half_h, z)
 
-func _make_snack(brand_row: Array) -> Node3D:
-	var brand = BrandDataScript.new()
-	brand.brand_name = brand_row[0]
-	brand.container_class = brand_row[1]
-	brand.destruction_class = brand_row[2]
+func _build_brand_kits() -> void:
+	# One shared BrandData/mesh/material set per brand — every snack instance
+	# reuses these resources instead of allocating its own
+	_brand_kits.clear()
+	for row in BRANDS:
+		var brand = BrandDataScript.new()
+		brand.brand_name = row[0]
+		brand.container_class = row[1]
+		brand.destruction_class = row[2]
+		var mat = StandardMaterial3D.new()
+		mat.albedo_color = row[3]
+		_brand_kits.append({
+			"brand": brand,
+			"mesh_map": ShelfStockerScript.build_mesh_map(row[1]),
+			"material": mat,
+		})
 
-	var mesh_map = ShelfStockerScript.build_mesh_map(brand.container_class)
-
+func _make_snack(kit: Dictionary) -> Node3D:
+	var brand: BrandData = kit["brand"]
 	var item = Node3D.new()
 	item.name = "Snack_%s" % brand.brand_name.replace(" ", "").replace("'", "")
 	item.set_script(DestructibleScript)
@@ -206,29 +245,32 @@ func _make_snack(brand_row: Array) -> Node3D:
 	item.max_health = 30.0
 	item.dent_threshold = 20.0
 	item.damaged_threshold = 10.0
-	item.fragment_count = 6
+	item.fragment_count = 4
 
 	var mi = MeshInstance3D.new()
 	mi.name = "MeshInstance3D"
-	mi.mesh = mesh_map["mesh"]
-	var mat = StandardMaterial3D.new()
-	mat.albedo_color = brand_row[3]
-	mi.material_override = mat
+	mi.mesh = kit["mesh_map"]["mesh"]
+	mi.material_override = kit["material"]
 	item.add_child(mi)
 
 	var body = StaticBody3D.new()
 	var col = CollisionShape3D.new()
-	col.shape = mesh_map["collider"]
+	col.shape = kit["mesh_map"]["collider"]
 	body.add_child(col)
 	item.add_child(body)
 
 	item.set_meta("mesh_instance", mi)
 	item.destroyed.connect(_on_snack_destroyed)
+	item.collected.connect(_on_snack_collected)
 	return item
 
 func _on_snack_destroyed() -> void:
 	_snacks_destroyed += 1
 	snack_destroyed.emit(_snacks_destroyed)
+
+func _on_snack_collected() -> void:
+	_snacks_collected += 1
+	snack_collected.emit(_snacks_collected)
 
 func _mesh_half_height(mesh: Mesh) -> float:
 	if mesh is CylinderMesh:

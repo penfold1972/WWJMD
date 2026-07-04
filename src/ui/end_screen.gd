@@ -3,6 +3,8 @@ extends CanvasLayer
 ## WWJMD End Screen — Play Again / Quit menu
 ## Wired to the getaway van exit trigger
 
+var _stats_label: Label
+
 func _ready():
 	# The tree is paused while this screen is up — keep processing so buttons work
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -34,6 +36,12 @@ func _build_ui() -> void:
 	title.add_theme_font_size_override("font_size", 36)
 	menu.add_child(title)
 
+	_stats_label = Label.new()
+	_stats_label.name = "Stats"
+	_stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_stats_label.add_theme_font_size_override("font_size", 20)
+	menu.add_child(_stats_label)
+
 	var again = Button.new()
 	again.name = "PlayAgainBtn"
 	again.text = "Play Again"
@@ -47,6 +55,11 @@ func _build_ui() -> void:
 	quit.custom_minimum_size = Vector2(200, 50)
 	quit.pressed.connect(_on_quit)
 	menu.add_child(quit)
+
+func set_stats(collected: int, destroyed: int, score: int) -> void:
+	_stats_label.text = "Snacks collected: %d\nSnacks destroyed: %d\nFinal score: %d" % [
+		collected, destroyed, score
+	]
 
 func _on_play_again() -> void:
 	get_tree().paused = false

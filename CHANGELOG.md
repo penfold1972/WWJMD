@@ -178,3 +178,22 @@ Complete rewrite of the convenience store layout per user specs:
 - `shelf_stocker.gd` set `item.owner = self`, which only persists when the stocker is
   the scene root — now uses `edited_scene_root`.
 - `brand_data.gd` gained `class_name BrandData`.
+
+## Gondola Shelves & Collect-vs-Destroy Scoring
+
+### Changed
+- **Aisle shelves rebuilt as double-sided gondolas**: central spine panel with 4 shelf
+  boards per unit; snacks stocked on every level on both sides (4 slots x 4 levels x
+  2 sides = 32 snacks per unit, 384 in the store). Brands vary per unit/level/side.
+  Snack meshes/materials/collision shapes are shared per brand instead of allocated
+  per item.
+- HUD hint and scoring flipped to match the new design: collecting is the goal,
+  destruction is penalized.
+
+### Added
+- **Collect interaction**: aiming at a snack within 2.5 m shows an "[E] Collect"
+  prompt; pressing E collects it (new `collect()` + `collected` signal on
+  `destructible_item.gd`, `interact` action bound to E — melee moved to F).
+- **Scoring**: +10 per collected snack, -5 per destroyed snack. Live
+  Collected/Destroyed/Score readout on the HUD; final tally on the end screen.
+- `.gitignore`: ignore Godot 4.4+ `*.uid` companion files.

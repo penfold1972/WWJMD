@@ -8,11 +8,15 @@ extends Node
 @export var player_spawn_position: Vector3 = Vector3(0, 0.2, 4)
 
 const FALL_RESET_Y: float = -10.0
+const COLLECT_POINTS: int = 10
+const DESTROY_PENALTY: int = 5
 
 var _level_builder: Node3D
 var _player: CharacterBody3D
 var _hud: CanvasLayer
 var _level_complete: bool = false
+var _collected: int = 0
+var _destroyed: int = 0
 
 func _ready():
 	_build_level()
@@ -47,7 +51,20 @@ func _build_hud() -> void:
 	_hud = hud_script.new() as CanvasLayer
 	_hud.name = "HUD"
 	add_child(_hud)
-	_level_builder.snack_destroyed.connect(_hud.set_snack_count)
+	_level_builder.snack_destroyed.connect(_on_snack_destroyed)
+	_level_builder.snack_collected.connect(_on_snack_collected)
+	_player.interact_target_changed.connect(_hud.show_interact_prompt)
+
+func _on_snack_destroyed(total: int) -> void:
+	_destroyed = total
+	_hud.set_stats(_collected, _destroyed, _score())
+
+func _on_snack_collected(total: int) -> void:
+	_collected = total
+	_hud.set_stats(_collected, _destroyed, _score())
+
+func _score() -> int:
+	return _collected * COLLECT_POINTS - _destroyed * DESTROY_PENALTY
 
 func _connect_exit_trigger() -> void:
 	# The level builder emits level_exit_triggered when the player reaches the van
@@ -61,4 +78,5 @@ func _on_level_exit() -> void:
 	var end_script = preload("res://src/ui/end_screen.gd")
 	var end_screen = end_script.new() as CanvasLayer
 	add_child(end_screen)
+	end_screen.set_stats(_collected, _destroyed, _score())
 	get_tree().paused = true

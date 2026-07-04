@@ -30,12 +30,21 @@ var _original_scale: Vector3
 
 signal phase_changed(from_phase: int, to_phase: int)
 signal destroyed()
+signal collected()
 
 func _ready():
 	_health = max_health
 	_mesh_instance = $MeshInstance3D as MeshInstance3D
 	assert(_mesh_instance != null, "DestructibleItem requires a MeshInstance3D child")
 	_original_scale = _mesh_instance.scale
+
+func collect() -> void:
+	# Picked up intact by the player — no fragments, no debris
+	if _current_phase == Phase.DESTROYED:
+		return
+	_current_phase = Phase.DESTROYED
+	collected.emit()
+	queue_free()
 
 func apply_damage(amount: float) -> void:
 	if _current_phase == Phase.DESTROYED:
