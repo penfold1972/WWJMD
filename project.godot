@@ -6,7 +6,7 @@ config/name="What Would John McClain Do?"
 config/description="What Would John McClain Do? - A 3D FPS destruction sandbox"
 config/version="0.1.0"
 run/main_scene="res://main.tscn"
-config/features=PackedStringArray("4.5")
+config/features=PackedStringArray("4.7")
 icon="res://assets/icon.svg"
 
 [autoload]
