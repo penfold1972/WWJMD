@@ -9,7 +9,7 @@ extends Node3D
 @export var wall_thickness: float = 0.2
 
 @export var aisle_count: int = 3
-@export var shelf_per_aisle: int = 4
+@export var shelf_per_aisle: int = 5
 
 @export var player_spawn: Node3D = null
 @export var enemy_template: PackedScene = null
@@ -107,8 +107,8 @@ func _build_coolers_and_freezers() -> void:
 	var z_start = -hd + 0.3
 	var colors = [Color(0.6, 0.7, 0.8), Color(0.7, 0.6, 0.8)]  # cool blue, freezer purple
 
-	for i in 5:
-		var is_freezer = i >= 3
+	for i in 7:
+		var is_freezer = i >= 4
 		var col = colors[1 if is_freezer else 0]
 		var x = -hw + 1.0 + i * 2.0
 		var w = _make_box(1.6, 2.2, 0.8, Vector3(x, 1.1, z_start), col)
@@ -178,10 +178,14 @@ func _build_aisles() -> void:
 	var aisle_z_start = -hd + 3.0
 	var aisle_z_step = (hd * 2 - 6.0) / (aisle_count + 1)
 
+	# Center the aisle columns in the left/middle of the store, leaving the
+	# strip along the right wall open for a future AI encounter space
+	var x_start = -(shelf_per_aisle - 1) * 2.5 * 0.5
+
 	for row in aisle_count:
 		var z = aisle_z_start + (row + 1) * aisle_z_step
 		for col in shelf_per_aisle:
-			var x = -6.0 + col * 2.5
+			var x = x_start + col * 2.5
 			var unit = _build_shelf_unit(Vector3(x, 0, z))
 			unit.name = "AisleShelf_%d_%d" % [row, col]
 			_shelves.append(unit)

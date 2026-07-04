@@ -213,3 +213,13 @@ Complete rewrite of the convenience store layout per user specs:
   live physics objects that slide along the shelf or tumble off it. Cans and bottles
   roll. Destroyed items drop out of collision immediately so neighbors fly through
   the space they occupied. Knocked-down snacks remain shootable and collectible.
+
+## Floor Plan Fill — right side of the store
+
+### Changed
+- Aisles extended from 4 to 5 gondola units per row and re-centered
+  (columns now computed from `shelf_per_aisle` instead of a hardcoded start),
+  filling the dead space right of center. 15 gondolas / 1080 snacks total.
+- Coolers extended from 5 to 7 units along the back wall (last 3 are freezers).
+- The ~4 m strip along the right wall is left open on purpose — reserved as an
+  open engagement area for the upcoming navmesh AI encounter.
